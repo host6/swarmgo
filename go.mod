@@ -13,3 +13,5 @@ require (
 	golang.org/x/sys v0.0.0-20190308023053-584f3b12f43e // indirect
 	gopkg.in/yaml.v2 v2.2.2
 )
+
+go 1.13

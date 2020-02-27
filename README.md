@@ -8,9 +8,16 @@ Prerequestes:
 - Need opportunity to use sudo command on all nodes without password:
   - use `sudo visudo`
   - modify `%sudo   ALL=(ALL:ALL) ALL` to `%sudo   ALL=(ALL:ALL) NOPASSWD: ALL`
+- set of VMs the swarm will be installed on
+  - example using `vagrant`
+    - create dir for VMs
+    - copy `/virtualbox/vagrantfile` there
+    - execute `vagrant up` there
+      - on `the hyper-v cmdlets for powershell are not available!` error:
+        - execute `vagrant up --provider virtualbox`
+        - note: VirtualBox 6.0.* or older are supported only
 
 Steps:
-
 - Fork swarmgo repo to `mycluster`
 - git clone `mycluster`
 - Run `go build swarmgo.go` to build swarmgo executable
@@ -21,19 +28,24 @@ Steps:
     - When target nodes are already pre-configured for SSH access with private/public keys, make sure that `PublicKey` and `PrivateKey` settings are filled properly
 - Run `swarmgo keys` to generate new SSH keys. This is only needed to be execited with target node(s) is pre-configured with plaintext password. Skip this option when node is already pre-configured with key access for SSH.
   - Keys are kept in `nodes/swarmgo-config.yml` 
-- Run ``eval `swarmgo agent` ``
-  - Command starts `ssh-agent` enabling single sign-on in the current terminal session. SSH keys must be configured.
-- Run `swarmgo imlucky IP1 [IP2] [IP3]` to build cluster automatically, with settings assigned automatically
-  - Nodes will be added with aliases node1, node2, node3
-  - One or three nodes will be assigned as managers, depending on number of nodes
-  - Traefik and consul will be installed
-  - Use option `-s` when ClusterUser already exists and SSH access using private/public keys is already configured on nodes being added. Make sure that SSH keys configured in `swarmgo-config.yml` when using this option.
-  - Use option `-p password` to specify root password (password access will be disabled)
-  - Use option `-m password` to specify password for authentication in monitoring services (Grafana, Prometheus, Traefik dashboard and Alert Manager)
-  - Use `-n` option to disable alerts from alertmanager
-  - Use `-w webhook_url` option to configure Slack alerts for specified webhook URL
+- Run `bash`
+  - Run ``eval `swarmgo agent` ``
+    - Command starts `ssh-agent` enabling single sign-on in the current terminal session. SSH keys must be configured.
+    - ``eval `./swarmgo agent` `` if launched in the current directory
+  - Run `swarmgo imlucky IP1 [IP2] [IP3]` to build cluster automatically, with settings assigned automatically
+    - Nodes will be added with aliases node1, node2, node3
+    - One or three nodes will be assigned as managers, depending on number of nodes
+    - Traefik and consul will be installed
+    - Use option `-s` when ClusterUser already exists and SSH access using private/public keys is already configured on nodes being added. Make sure that SSH keys configured in `swarmgo-config.yml` when using this option.
+    - Use option `-p password` to specify root password (password access will be disabled)
+    - Use option `-m password` to specify password for authentication in monitoring services (Grafana, Prometheus, Traefik dashboard and Alert Manager)
+    - Use `-n` option to disable alerts from alertmanager
+    - Use `-w webhook_url` option to configure Slack alerts for specified webhook URL
+    - notes
+      - `Enter webhook URL for slack channel cluster`
+        - could be any or skipped if no slack notification required
 
-  Example: `swarmgo imlucky 192.168.98.10 192.168.98.11 192.168.98.12 -p "pas" -m "mon" -n -s`
+    Example: `swarmgo imlucky 192.168.98.10 192.168.98.11 192.168.98.12 -p "pas" -m "mon" -n -s`
 
 Commands to build cluster manually:
 
@@ -89,7 +101,12 @@ Networks:
 # Misc
 
 - ssh cluster@address -i ~/.ssh/gmpw7
+  - login using certificate
 - apt-cache madison docker-ce
 
 # Known Issues
 - When nodes are bihind of NAT (e.g. using external IP addresses) encrypted networks doesn't work in Ubuntu LTE 18.04 and other OSes running kernel >4.4, ref. https://github.com/moby/moby/issues/37115 for details
+- `bash: ./setup.sh: /bin/bash^M: bad interpreter: No such file or directory` error on `swarmgo imlucky` command
+  - set line endings of `/scripts/adduser.sh` to LF, rebuild swarmgo
+- got stuck on `Deploying swarmprom` stage, not all services installed ()
+  - 
